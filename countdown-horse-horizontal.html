@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@400;500;600;700;800&family=Archivo:wght@300;400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: 'Archivo', sans-serif;
+    background: #000000;
+    color: #ffffff;
+  }
+
+  .banner {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000000;
+  }
+
+  .banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(135deg, rgba(79,33,255,0.08) 0%, transparent 50%),
+      linear-gradient(225deg, rgba(255,49,39,0.06) 0%, transparent 50%);
+    z-index: 1;
+  }
+
+  .pattern-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.04;
+    background-image:
+      repeating-linear-gradient(-45deg, transparent, transparent 40px, #ffffff 40px, #ffffff 41px);
+  }
+
+  .glow-blue {
+    position: absolute;
+    top: -150px;
+    left: -100px;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(79,33,255,0.15) 0%, transparent 65%);
+    z-index: 1;
+  }
+
+  .glow-red {
+    position: absolute;
+    bottom: -150px;
+    right: -80px;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(255,49,39,0.1) 0%, transparent 65%);
+    z-index: 1;
+  }
+
+  .content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    width: 100%;
+    max-width: 1200px;
+    padding: 0 40px;
+  }
+
+  .left-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .logo-container img {
+    height: 36px;
+    width: auto;
+    filter: invert(1);
+  }
+
+  .program-label {
+    font-family: 'Archivo Expanded', 'Archivo', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3.5px;
+    text-transform: uppercase;
+    color: #B2B2B2;
+  }
+
+  .v-divider {
+    width: 1px;
+    height: 80px;
+    background: linear-gradient(180deg, transparent, rgba(255,255,255,0.12), transparent);
+    flex-shrink: 0;
+  }
+
+  .center-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .main-title {
+    font-family: 'Archivo Expanded', 'Archivo', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: 1.5px;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .main-title .highlight-red { color: #FF3127; }
+
+  .target-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .target-bar-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #FF3127;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .target-bar-text {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.4);
+  }
+
+  .target-bar-text strong {
+    color: rgba(255,255,255,0.7);
+    font-weight: 700;
+  }
+
+  .countdown-grid {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .countdown-unit {
+    text-align: center;
+    min-width: 80px;
+  }
+
+  .countdown-value-container {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 12px 8px 10px;
+    transition: border-color 0.3s ease;
+  }
+
+  .countdown-unit:hover .countdown-value-container {
+    border-color: rgba(79,33,255,0.3);
+  }
+
+  .countdown-value {
+    font-family: 'Archivo Expanded', 'Archivo', sans-serif;
+    font-size: 38px;
+    font-weight: 800;
+    line-height: 1;
+    color: #ffffff;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .countdown-label {
+    font-family: 'Archivo', sans-serif;
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-top: 8px;
+  }
+
+  .separator {
+    font-size: 28px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.12);
+    padding-bottom: 20px;
+    user-select: none;
+  }
+
+  .bottom-strip {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #4F21FF 0%, #FF3127 50%, #FFF39F 100%);
+    z-index: 3;
+  }
+
+  @keyframes urgent-flash {
+    0%, 100% { color: #ffffff; }
+    50% { color: #FF3127; }
+  }
+
+  .urgent .countdown-unit:first-child .countdown-value {
+    animation: urgent-flash 1.8s ease-in-out infinite;
+  }
+
+  .urgent .countdown-unit:first-child .countdown-value-container {
+    border-color: rgba(255,49,39,0.25);
+  }
+
+  .completed .main-title .highlight-red { color: #4caf50; }
+  .completed .countdown-value { color: #4caf50 !important; }
+  .completed .target-bar-dot { background: #4caf50; animation: none; }
+
+  @media (max-width: 860px) {
+    .content { flex-direction: column; gap: 16px; padding: 20px; }
+    .v-divider { display: none; }
+    .left-section { align-items: center; }
+    .countdown-unit { min-width: 60px; }
+    .countdown-value { font-size: 28px; }
+    .main-title { font-size: 18px; }
+    .countdown-value-container { padding: 10px 6px 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="banner" id="banner">
+  <div class="pattern-overlay"></div>
+  <div class="glow-blue"></div>
+  <div class="glow-red"></div>
+
+  <div class="content">
+    <div class="left-section">
+      <div class="logo-container">
+        <img src="https://horse-powertrain.com/hubfs/HORSE_LOGOTYPE_RGB_BLACK_WEB-01.svg" alt="Horse Powertrain" onerror="this.style.display='none'">
+      </div>
+      <div class="program-label">SAP S/4HANA LATAM</div>
+    </div>
+
+    <div class="v-divider"></div>
+
+    <div class="center-section">
+      <h1 class="main-title">Countdown to <span class="highlight-red">Go Live</span></h1>
+      <div class="target-bar">
+        <div class="target-bar-dot"></div>
+        <div class="target-bar-text">Target: <strong>05 Jul 2026</strong></div>
+      </div>
+    </div>
+
+    <div class="v-divider"></div>
+
+    <div class="countdown-grid">
+      <div class="countdown-unit">
+        <div class="countdown-value-container">
+          <div class="countdown-value" id="days">--</div>
+        </div>
+        <div class="countdown-label">Dias</div>
+      </div>
+      <div class="separator">:</div>
+      <div class="countdown-unit">
+        <div class="countdown-value-container">
+          <div class="countdown-value" id="hours">--</div>
+        </div>
+        <div class="countdown-label">Horas</div>
+      </div>
+      <div class="separator">:</div>
+      <div class="countdown-unit">
+        <div class="countdown-value-container">
+          <div class="countdown-value" id="minutes">--</div>
+        </div>
+        <div class="countdown-label">Min</div>
+      </div>
+      <div class="separator">:</div>
+      <div class="countdown-unit">
+        <div class="countdown-value-container">
+          <div class="countdown-value" id="seconds">--</div>
+        </div>
+        <div class="countdown-label">Seg</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-strip"></div>
+</div>
+
+<script>
+(function() {
+  var targetDate = new Date('2026-07-05T23:59:00Z').getTime();
+
+  function pad(n) {
+    return n < 10 ? '0' + n : String(n);
+  }
+
+  function update() {
+    var now = new Date().getTime();
+    var diff = targetDate - now;
+    var banner = document.getElementById('banner');
+
+    if (diff <= 0) {
+      document.getElementById('days').textContent = '00';
+      document.getElementById('hours').textContent = '00';
+      document.getElementById('minutes').textContent = '00';
+      document.getElementById('seconds').textContent = '00';
+      banner.classList.add('completed');
+      return;
+    }
+
+    var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    document.getElementById('days').textContent = pad(days);
+    document.getElementById('hours').textContent = pad(hours);
+    document.getElementById('minutes').textContent = pad(minutes);
+    document.getElementById('seconds').textContent = pad(seconds);
+
+    if (days < 30) {
+      banner.classList.add('urgent');
+    } else {
+      banner.classList.remove('urgent');
+    }
+
+    requestAnimationFrame(function() {
+      setTimeout(update, 1000);
+    });
+  }
+
+  update();
+})();
+</script>
+
+</body>
+</html>
