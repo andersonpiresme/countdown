@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Source Sans 3', 'Segoe UI', sans-serif;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+  }
+
+  .countdown-wrapper {
+    width: 100%;
+    max-width: 780px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, #0a1128 0%, #1b2a4a 40%, #0f3460 100%);
+    border-radius: 12px;
+    padding: 36px 32px 32px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  }
+
+  /* Subtle SAP-inspired geometric accent */
+  .countdown-wrapper::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(0,150,214,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .countdown-wrapper::after {
+    content: '';
+    position: absolute;
+    bottom: -40px;
+    left: -40px;
+    width: 160px;
+    height: 160px;
+    background: radial-gradient(circle, rgba(240,171,0,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 28px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3.5px;
+    text-transform: uppercase;
+    color: #0096d6;
+    margin-bottom: 6px;
+  }
+
+  .header-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 1px;
+  }
+
+  .header-title span {
+    color: #f0ab00;
+  }
+
+  .divider {
+    width: 48px;
+    height: 3px;
+    background: linear-gradient(90deg, #0096d6, #f0ab00);
+    margin: 14px auto 0;
+    border-radius: 2px;
+  }
+
+  .countdown-grid {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .countdown-unit {
+    flex: 0 0 auto;
+    min-width: 100px;
+    text-align: center;
+  }
+
+  .countdown-value-box {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(0,150,214,0.25);
+    border-radius: 10px;
+    padding: 14px 8px 10px;
+    backdrop-filter: blur(4px);
+    transition: border-color 0.4s ease;
+  }
+
+  .countdown-unit:hover .countdown-value-box {
+    border-color: rgba(0,150,214,0.5);
+  }
+
+  .countdown-value {
+    font-size: 46px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .countdown-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    margin-top: 10px;
+  }
+
+  .separator {
+    display: flex;
+    align-items: center;
+    padding-bottom: 22px;
+    color: rgba(0,150,214,0.5);
+    font-size: 32px;
+    font-weight: 300;
+  }
+
+  .target-date {
+    text-align: center;
+    margin-top: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .target-date-text {
+    font-size: 12px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 1px;
+  }
+
+  .target-date-text strong {
+    color: rgba(255,255,255,0.55);
+    font-weight: 600;
+  }
+
+  /* Pulse animation for urgency when < 30 days */
+  @keyframes urgentPulse {
+    0%, 100% { color: #ffffff; }
+    50% { color: #f0ab00; }
+  }
+
+  .urgent .countdown-unit:first-child .countdown-value {
+    animation: urgentPulse 2s ease-in-out infinite;
+  }
+
+  /* Completed state */
+  .completed .header-title span {
+    color: #4caf50;
+  }
+
+  .completed .countdown-value {
+    color: #4caf50;
+  }
+
+  /* Responsive */
+  @media (max-width: 540px) {
+    .countdown-wrapper { padding: 24px 16px 20px; }
+    .countdown-grid { gap: 8px; }
+    .countdown-unit { min-width: 68px; }
+    .countdown-value { font-size: 32px; }
+    .countdown-label { font-size: 9px; letter-spacing: 1.5px; }
+    .header-title { font-size: 22px; }
+    .separator { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="countdown-wrapper" id="countdownWrapper">
+  <div class="header">
+    <div class="header-label">SAP S/4HANA LATAM</div>
+    <div class="header-title">Countdown to <span>Go Live</span></div>
+    <div class="divider"></div>
+  </div>
+
+  <div class="countdown-grid" id="countdownGrid">
+    <div class="countdown-unit">
+      <div class="countdown-value-box">
+        <div class="countdown-value" id="days">--</div>
+      </div>
+      <div class="countdown-label">Dias</div>
+    </div>
+    <div class="separator">:</div>
+    <div class="countdown-unit">
+      <div class="countdown-value-box">
+        <div class="countdown-value" id="hours">--</div>
+      </div>
+      <div class="countdown-label">Horas</div>
+    </div>
+    <div class="separator">:</div>
+    <div class="countdown-unit">
+      <div class="countdown-value-box">
+        <div class="countdown-value" id="minutes">--</div>
+      </div>
+      <div class="countdown-label">Minutos</div>
+    </div>
+    <div class="separator">:</div>
+    <div class="countdown-unit">
+      <div class="countdown-value-box">
+        <div class="countdown-value" id="seconds">--</div>
+      </div>
+      <div class="countdown-label">Segundos</div>
+    </div>
+  </div>
+
+  <div class="target-date">
+    <div class="target-date-text">Target: <strong>05 de Julho de 2026</strong></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var targetDate = new Date('2026-07-05T23:59:00Z').getTime();
+
+  function pad(n) {
+    return n < 10 ? '0' + n : n;
+  }
+
+  function update() {
+    var now = new Date().getTime();
+    var diff = targetDate - now;
+    var wrapper = document.getElementById('countdownWrapper');
+
+    if (diff <= 0) {
+      document.getElementById('days').textContent = '00';
+      document.getElementById('hours').textContent = '00';
+      document.getElementById('minutes').textContent = '00';
+      document.getElementById('seconds').textContent = '00';
+      wrapper.classList.add('completed');
+      return;
+    }
+
+    var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    document.getElementById('days').textContent = pad(days);
+    document.getElementById('hours').textContent = pad(hours);
+    document.getElementById('minutes').textContent = pad(minutes);
+    document.getElementById('seconds').textContent = pad(seconds);
+
+    if (days < 30) {
+      wrapper.classList.add('urgent');
+    }
+
+    requestAnimationFrame(function() {
+      setTimeout(update, 1000);
+    });
+  }
+
+  update();
+})();
+</script>
+
+</body>
+</html>
