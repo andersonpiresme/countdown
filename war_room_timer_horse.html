@@ -115,6 +115,30 @@
   input[type="text"]:hover { border-color: var(--border-strong); }
   input[type="text"]:focus { outline: none; border-color: var(--accent-purple); }
 
+  select.leader-select {
+    width: 100%;
+    height: 38px;
+    padding: 0 36px 0 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text-primary);
+    background-color: var(--bg-input);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%23a8a8b3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='1 1 6 6 11 1'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    transition: border-color 0.15s;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+  }
+  select.leader-select:hover { border-color: var(--border-strong); }
+  select.leader-select:focus { outline: none; border-color: var(--accent-purple); }
+  select.leader-select option { background: var(--bg-card); color: var(--text-primary); padding: 8px; }
+  select.leader-select option:first-child { color: var(--text-tertiary); }
+
   .top-bar {
     display: flex;
     justify-content: space-between;
@@ -500,7 +524,26 @@
       </div>
       <div class="field">
         <label>Nome do líder</label>
-        <input type="text" id="input-name" placeholder="Ex: Matias Arrue" maxlength="50" />
+        <select class="leader-select" id="input-name">
+          <option value="">Selecione um líder...</option>
+          <option value="ALVES Rafael">ALVES Rafael</option>
+          <option value="ARRUE Matias">ARRUE Matias</option>
+          <option value="BENATTI Jonas">BENATTI Jonas</option>
+          <option value="CREPLIVE Lucas">CREPLIVE Lucas</option>
+          <option value="DESCALZO Daniel">DESCALZO Daniel</option>
+          <option value="FIRST Luana">FIRST Luana</option>
+          <option value="GUDINO Consuelo">GUDINO Consuelo</option>
+          <option value="MATUCHESKI Rafael">MATUCHESKI Rafael</option>
+          <option value="MOCHINSKI Thiago">MOCHINSKI Thiago</option>
+          <option value="MULLER Heloisa">MULLER Heloisa</option>
+          <option value="NASCIMENTO Jaqueline">NASCIMENTO Jaqueline</option>
+          <option value="OLIVEIRA Gustavo">OLIVEIRA Gustavo</option>
+          <option value="ROMERO Felipe">ROMERO Felipe</option>
+          <option value="SARUHASHI Heloisa">SARUHASHI Heloisa</option>
+          <option value="SCHWARTZ Stephanie">SCHWARTZ Stephanie</option>
+          <option value="STUCHI Roberto">STUCHI Roberto</option>
+          <option value="VERGUEIRO Luciane">VERGUEIRO Luciane</option>
+        </select>
       </div>
     </div>
 
@@ -1017,7 +1060,8 @@
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.target.tagName === 'INPUT') return;
+    const tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
     if (e.code === 'Space') {
       e.preventDefault();
       if (!isRunning) startTimer();
