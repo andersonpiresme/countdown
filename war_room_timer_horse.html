@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>War Room Timer — SAP S/4HANA LATAM</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg-page: #0d0d0f;
+    --bg-card: #1a1a1e;
+    --bg-card-hover: #222228;
+    --bg-input: #0f0f12;
+    --accent-purple: #5a3a9e;
+    --accent-purple-hover: #6b4ab3;
+    --accent-purple-bg: #2a1f4a;
+    --accent-red: #e63946;
+    --accent-red-bg: #3a1418;
+    --phase-neutral: #ffffff;
+    --phase-warning: #f5b73d;
+    --phase-danger: #e63946;
+    --text-primary: #ffffff;
+    --text-secondary: #a8a8b3;
+    --text-tertiary: #6b6b75;
+    --border-subtle: rgba(255,255,255,0.08);
+    --border-default: rgba(255,255,255,0.15);
+    --border-strong: rgba(255,255,255,0.25);
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --font: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0; background: var(--bg-page); font-family: var(--font); color: var(--text-primary); min-height: 100vh; }
+
+  .hero {
+    background: linear-gradient(135deg, #0d0d0f 0%, #1a1324 60%, #0d0d0f 100%);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 1.5rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #5a3a9e 0%, #c4451c 50%, #5a3a9e 100%);
+    opacity: 0.6;
+  }
+  .hero-content { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+  .hero-brand { display: flex; align-items: center; gap: 16px; }
+  .horse-logo {
+    font-family: "Arial Black", sans-serif;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    padding: 4px 12px;
+    line-height: 1;
+  }
+  .hero-titles { display: flex; flex-direction: column; gap: 2px; }
+  .hero-program { font-size: 11px; font-weight: 500; letter-spacing: 3px; color: var(--text-secondary); text-transform: uppercase; }
+  .hero-title { font-size: 18px; font-weight: 600; color: var(--text-primary); letter-spacing: 0.3px; }
+  .hero-meta { display: flex; align-items: center; gap: 8px; }
+  .hero-meta-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+  .hero-meta-red { color: var(--accent-red); font-weight: 600; }
+
+  .sound-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    transition: all 0.15s;
+    margin-left: 12px;
+  }
+  .sound-toggle:hover { color: var(--text-primary); border-color: var(--border-strong); }
+  .sound-toggle.active {
+    color: var(--accent-purple);
+    border-color: var(--accent-purple);
+    background: var(--accent-purple-bg);
+  }
+  .sound-icon { width: 14px; height: 14px; flex-shrink: 0; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+  .section-label { font-size: 13px; font-weight: 600; color: var(--text-primary); margin: 0 0 12px; text-transform: none; }
+
+  input[type="text"] {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text-primary);
+    background: var(--bg-input);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    transition: border-color 0.15s;
+  }
+  input[type="text"]::placeholder { color: var(--text-tertiary); }
+  input[type="text"]:hover { border-color: var(--border-strong); }
+  input[type="text"]:focus { outline: none; border-color: var(--accent-purple); }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 1rem;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .conductor-info { display: flex; flex-direction: column; gap: 4px; }
+  .conductor-title { font-size: 16px; font-weight: 600; color: var(--text-primary); margin: 0; }
+  .conductor-sub { font-size: 12px; color: var(--text-secondary); margin: 0; }
+
+  .mode-toggle { display: flex; gap: 6px; background: var(--bg-card); padding: 4px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); }
+  .mode-btn {
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .mode-btn:hover { color: var(--text-primary); }
+  .mode-btn.active { background: var(--accent-purple); color: var(--text-primary); font-weight: 600; }
+
+  .timer-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 2rem 1.5rem;
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  .timer-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent-purple);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    transition: background 0.4s ease;
+  }
+  .timer-card.phase-warning::before { background: var(--phase-warning); }
+  .timer-card.phase-danger::before { background: var(--phase-danger); }
+  .timer-card.over::before { background: var(--phase-danger); }
+
+  .timer-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: 14px;
+    margin-bottom: 1.5rem;
+  }
+  .field label {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+  }
+
+  .timer-display {
+    text-align: center;
+    padding: 1rem 0 0.5rem;
+  }
+  .time-big {
+    font-family: "Segoe UI", sans-serif;
+    font-size: 108px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 0.95;
+    letter-spacing: -3px;
+    color: var(--phase-neutral);
+    transition: color 0.4s ease, transform 0.4s ease;
+  }
+  .time-big.phase-warning { color: var(--phase-warning); }
+  .time-big.phase-danger { color: var(--phase-danger); }
+  .time-big.over { color: var(--phase-danger); }
+  .time-big.pulse { animation: pulse-attention 0.9s ease-in-out infinite; }
+  @keyframes pulse-attention {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.04); opacity: 0.85; }
+  }
+  .time-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-top: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: color 0.4s ease;
+  }
+  .time-label.phase-warning { color: var(--phase-warning); }
+  .time-label.phase-danger { color: var(--phase-danger); }
+  .time-label.over { color: var(--phase-danger); }
+
+  .progress {
+    height: 4px;
+    background: var(--bg-input);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 1.25rem 0;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--accent-purple);
+    transition: width 0.15s linear, background 0.4s ease;
+  }
+  .progress-bar.phase-warning { background: var(--phase-warning); }
+  .progress-bar.phase-danger { background: var(--phase-danger); }
+  .progress-bar.over { background: var(--phase-danger); }
+
+  .controls { display: flex; gap: 8px; justify-content: center; margin-top: 1rem; flex-wrap: wrap; }
+  .btn {
+    padding: 10px 22px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-default);
+    background: transparent;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--text-primary);
+    transition: all 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .btn:hover { background: var(--bg-card-hover); border-color: var(--border-strong); }
+  .btn:active { transform: scale(0.98); }
+  .btn.primary {
+    background: var(--accent-purple);
+    border-color: var(--accent-purple);
+    color: var(--text-primary);
+    font-weight: 600;
+    padding: 10px 28px;
+  }
+  .btn.primary:hover { background: var(--accent-purple-hover); border-color: var(--accent-purple-hover); }
+  .btn.danger { border-color: rgba(230,57,70,0.4); color: var(--accent-red); }
+  .btn.danger:hover { background: var(--accent-red-bg); border-color: var(--accent-red); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn:disabled:hover { background: transparent; border-color: var(--border-default); }
+
+  .session-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-subtle);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+  }
+  .session-count { color: var(--text-primary); font-weight: 600; }
+  .session-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 10px;
+    background: var(--accent-purple-bg);
+    color: #c9b8ff;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+  .session-badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #c9b8ff;
+  }
+
+  .ranking-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+  }
+  .ranking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .ranking-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    letter-spacing: 0.3px;
+  }
+  .ranking-filter {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-input);
+    padding: 3px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+  }
+  .filter-btn {
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 3px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .filter-btn:hover { color: var(--text-primary); }
+  .filter-btn.active { background: var(--accent-purple); color: var(--text-primary); font-weight: 600; }
+
+  .ranking-row {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) auto auto;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 4px;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 13px;
+  }
+  .ranking-row:last-child { border-bottom: none; }
+  .rank-num {
+    font-weight: 700;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+  }
+  .rank-num.top { color: var(--accent-red); }
+  .rank-num.podium { color: var(--text-primary); }
+  .rank-name {
+    color: var(--text-primary);
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .rank-count {
+    font-variant-numeric: tabular-nums;
+    color: var(--text-tertiary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+  }
+  .rank-over {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    font-size: 13px;
+    min-width: 60px;
+    text-align: right;
+  }
+  .rank-over.negative { color: var(--accent-red); }
+  .rank-over.positive { color: #4ade80; }
+
+  .empty {
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    padding: 2rem 0;
+    font-style: italic;
+  }
+
+  .ranking-footer {
+    display: flex;
+    gap: 8px;
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border-subtle);
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  .ranking-footer .btn { padding: 7px 14px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .chart-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .chart-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .chart-legend {
+    display: flex;
+    gap: 14px;
+    font-size: 10px;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 10px; height: 10px; border-radius: 2px; }
+  .legend-swatch.over { background: var(--accent-red); }
+  .legend-swatch.ok { background: #4ade80; }
+  .chart-wrapper {
+    position: relative;
+    width: 100%;
+    min-height: 60px;
+  }
+  .chart-empty {
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    padding: 2rem 0;
+    font-style: italic;
+  }
+
+  @media (max-width: 640px) {
+    .hero { padding: 1rem; }
+    .container { padding: 1rem; }
+    .time-big { font-size: 72px; }
+    .timer-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-brand">
+      <div class="horse-logo">HORSE</div>
+      <div class="hero-titles">
+        <span class="hero-program">SAP S/4HANA LATAM</span>
+        <span class="hero-title">War Room Timer</span>
+      </div>
+    </div>
+    <div class="hero-meta">
+      <span class="hero-meta-label">Problem Daily</span>
+      <span class="hero-meta-label hero-meta-red">•</span>
+      <span class="hero-meta-label">Target Go Live: <strong>01 Jul 2026</strong></span>
+      <button class="sound-toggle" id="btn-sound" title="Ativar/desativar beep no estouro">
+        <svg class="sound-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+        <span id="sound-label">SOM OFF</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="top-bar">
+    <div class="conductor-info">
+      <p class="conductor-title">Controle de tempo da daily</p>
+      <p class="conductor-sub">Condutor: aperta iniciar quando a pessoa começa a falar · espaço alterna iniciar/parar</p>
+    </div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="mode-followup">FOLLOW-UP · 1 MIN</button>
+      <button class="mode-btn" id="mode-novo">NOVO PROBLEMA · 2 MIN</button>
+    </div>
+  </div>
+
+  <div class="timer-card" id="timer-card">
+    <div class="timer-grid">
+      <div class="field">
+        <label>ID do problema</label>
+        <input type="text" id="input-id" placeholder="P001" maxlength="10" />
+      </div>
+      <div class="field">
+        <label>Nome do líder</label>
+        <input type="text" id="input-name" placeholder="Ex: Matias Arrue" maxlength="50" />
+      </div>
+    </div>
+
+    <div class="timer-display">
+      <div class="time-big" id="timer-display">01:00</div>
+      <div class="time-label" id="timer-label">FOLLOW-UP · 1 MINUTO</div>
+    </div>
+
+    <div class="progress">
+      <div class="progress-bar" id="progress-bar" style="width: 100%"></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn primary" id="btn-start">INICIAR</button>
+      <button class="btn" id="btn-stop" disabled>PARAR E REGISTRAR</button>
+      <button class="btn" id="btn-reset">RESET</button>
+    </div>
+
+    <div class="session-info">
+      <span>Sessão: <span class="session-count" id="session-count">0</span> falas registradas</span>
+      <span class="session-badge">SESSÃO ATIVA</span>
+    </div>
+  </div>
+
+  <div class="ranking-card">
+    <div class="ranking-header">
+      <p class="ranking-title">Ranking dos que mais estouraram</p>
+      <div class="ranking-filter">
+        <button class="filter-btn active" data-filter="session">HOJE</button>
+        <button class="filter-btn" data-filter="all">TUDO</button>
+      </div>
+    </div>
+    <div id="ranking-list">
+      <p class="empty">Nenhum registro ainda. Aperta iniciar e vamos começar.</p>
+    </div>
+
+    <div class="chart-section" id="chart-section" style="display:none;">
+      <div class="chart-header">
+        <p class="chart-title">Visualização · segundos estourados por líder</p>
+        <div class="chart-legend">
+          <div class="legend-item"><span class="legend-swatch over"></span>Estourou</div>
+          <div class="legend-item"><span class="legend-swatch ok"></span>No tempo</div>
+        </div>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="ranking-chart"></canvas>
+      </div>
+    </div>
+    <div class="ranking-footer">
+      <button class="btn" id="btn-export">EXPORTAR CSV</button>
+      <button class="btn danger" id="btn-new-session">NOVA SESSÃO</button>
+      <button class="btn danger" id="btn-clear">LIMPAR TUDO</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  const STORAGE_KEY = 'war_room_timer_records';
+  const SESSION_KEY = 'war_room_timer_session';
+
+  let mode = 'followup';
+  let limitSeconds = 60;
+  let isRunning = false;
+  let startTime = null;
+  let intervalId = null;
+  let currentSessionId = null;
+  let records = [];
+  let currentFilter = 'session';
+  let chartInstance = null;
+  let lastPhase = 'neutral';
+  let soundEnabled = false;
+  let beepPlayed = false;
+  let audioCtx = null;
+
+  const el = {
+    card: document.getElementById('timer-card'),
+    display: document.getElementById('timer-display'),
+    label: document.getElementById('timer-label'),
+    progressBar: document.getElementById('progress-bar'),
+    btnStart: document.getElementById('btn-start'),
+    btnStop: document.getElementById('btn-stop'),
+    btnReset: document.getElementById('btn-reset'),
+    btnExport: document.getElementById('btn-export'),
+    btnNewSession: document.getElementById('btn-new-session'),
+    btnClear: document.getElementById('btn-clear'),
+    btnSound: document.getElementById('btn-sound'),
+    soundLabel: document.getElementById('sound-label'),
+    inputId: document.getElementById('input-id'),
+    inputName: document.getElementById('input-name'),
+    sessionCount: document.getElementById('session-count'),
+    rankingList: document.getElementById('ranking-list'),
+    modeFollowup: document.getElementById('mode-followup'),
+    modeNovo: document.getElementById('mode-novo')
+  };
+
+  function playBeep() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(660, audioCtx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.3, audioCtx.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(audioCtx.currentTime);
+      osc.stop(audioCtx.currentTime + 0.4);
+    } catch (e) {}
+  }
+
+  function toggleSound() {
+    soundEnabled = !soundEnabled;
+    el.btnSound.classList.toggle('active', soundEnabled);
+    el.soundLabel.textContent = soundEnabled ? 'SOM ON' : 'SOM OFF';
+    if (soundEnabled) {
+      try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+    }
+    try { localStorage.setItem('war_room_timer_sound', soundEnabled ? '1' : '0'); } catch(e) {}
+  }
+
+  function loadSoundPref() {
+    try {
+      const v = localStorage.getItem('war_room_timer_sound');
+      if (v === '1') {
+        soundEnabled = true;
+        el.btnSound.classList.add('active');
+        el.soundLabel.textContent = 'SOM ON';
+      }
+    } catch(e) {}
+  }
+
+  function fmtTime(sec) {
+    const abs = Math.abs(Math.round(sec));
+    const m = Math.floor(abs / 60);
+    const s = abs % 60;
+    const sign = sec < 0 ? '-' : '';
+    return sign + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  }
+
+  function loadRecords() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      records = raw ? JSON.parse(raw) : [];
+    } catch (e) { records = []; }
+    try {
+      currentSessionId = localStorage.getItem(SESSION_KEY) || newSessionId();
+      if (!localStorage.getItem(SESSION_KEY)) saveSessionId();
+    } catch (e) { currentSessionId = newSessionId(); }
+    renderRanking();
+    updateSessionCount();
+  }
+
+  function newSessionId() { return 'S' + Date.now(); }
+  function saveSessionId() { try { localStorage.setItem(SESSION_KEY, currentSessionId); } catch(e) {} }
+  function saveRecords() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); } catch(e) {} }
+
+  function setMode(newMode) {
+    mode = newMode;
+    limitSeconds = newMode === 'followup' ? 60 : 120;
+    el.modeFollowup.classList.toggle('active', newMode === 'followup');
+    el.modeNovo.classList.toggle('active', newMode === 'novo');
+    el.label.textContent = newMode === 'followup' ? 'FOLLOW-UP · 1 MINUTO' : 'NOVO PROBLEMA · 2 MINUTOS';
+    resetTimer();
+  }
+
+  function clearPhaseClasses() {
+    ['phase-warning', 'phase-danger', 'over', 'pulse'].forEach(cls => {
+      el.display.classList.remove(cls);
+      el.label.classList.remove(cls);
+      el.card.classList.remove(cls);
+      el.progressBar.classList.remove(cls);
+    });
+    beepPlayed = false;
+  }
+
+  function applyPhase(phase) {
+    clearPhaseClasses();
+    if (phase === 'warning') {
+      el.display.classList.add('phase-warning');
+      el.label.classList.add('phase-warning');
+      el.card.classList.add('phase-warning');
+      el.progressBar.classList.add('phase-warning');
+    } else if (phase === 'danger') {
+      el.display.classList.add('phase-danger');
+      el.label.classList.add('phase-danger');
+      el.card.classList.add('phase-danger');
+      el.progressBar.classList.add('phase-danger');
+    } else if (phase === 'over') {
+      el.display.classList.add('over');
+      el.label.classList.add('over');
+      el.card.classList.add('over');
+      el.progressBar.classList.add('over');
+    }
+  }
+
+  function resetTimer() {
+    if (intervalId) { clearInterval(intervalId); intervalId = null; }
+    isRunning = false;
+    startTime = null;
+    lastPhase = 'neutral';
+    el.display.textContent = fmtTime(limitSeconds);
+    clearPhaseClasses();
+    el.progressBar.style.width = '100%';
+    el.btnStart.disabled = false;
+    el.btnStop.disabled = true;
+    el.label.textContent = mode === 'followup' ? 'FOLLOW-UP · 1 MINUTO' : 'NOVO PROBLEMA · 2 MINUTOS';
+  }
+
+  function tick() {
+    const elapsed = (Date.now() - startTime) / 1000;
+    const remaining = limitSeconds - elapsed;
+    el.display.textContent = fmtTime(remaining);
+    const pct = Math.max(0, Math.min(100, (remaining / limitSeconds) * 100));
+    el.progressBar.style.width = pct + '%';
+
+    if (remaining < 0) {
+      if (!el.card.classList.contains('over')) {
+        applyPhase('over');
+        el.display.classList.add('pulse');
+        if (soundEnabled && !beepPlayed) {
+          playBeep();
+          beepPlayed = true;
+        }
+      }
+      el.label.textContent = 'ESTOUROU ' + fmtTime(Math.abs(remaining));
+      el.progressBar.style.width = '100%';
+      return;
+    }
+
+    const pctRemaining = remaining / limitSeconds;
+    let currentPhase = 'neutral';
+    if (pctRemaining <= 0.2) {
+      currentPhase = 'danger';
+    } else if (pctRemaining <= 0.5) {
+      currentPhase = 'warning';
+    }
+
+    if (currentPhase !== lastPhase) {
+      applyPhase(currentPhase);
+      lastPhase = currentPhase;
+    }
+
+    if (remaining <= 10 && remaining > 0) {
+      if (!el.display.classList.contains('pulse')) {
+        el.display.classList.add('pulse');
+      }
+    } else {
+      el.display.classList.remove('pulse');
+    }
+  }
+
+  function startTimer() {
+    if (!el.inputName.value.trim()) {
+      el.inputName.focus();
+      el.inputName.style.borderColor = 'var(--accent-red)';
+      setTimeout(() => { el.inputName.style.borderColor = ''; }, 1500);
+      return;
+    }
+    isRunning = true;
+    startTime = Date.now();
+    lastPhase = 'neutral';
+    beepPlayed = false;
+    clearPhaseClasses();
+    el.btnStart.disabled = true;
+    el.btnStop.disabled = false;
+    intervalId = setInterval(tick, 100);
+    tick();
+  }
+
+  function stopTimer() {
+    if (!isRunning) return;
+    const elapsed = Math.round((Date.now() - startTime) / 1000);
+    const over = elapsed - limitSeconds;
+    clearInterval(intervalId);
+    intervalId = null;
+    isRunning = false;
+    records.push({
+      id: el.inputId.value.trim() || '-',
+      name: el.inputName.value.trim(),
+      mode: mode,
+      limit: limitSeconds,
+      elapsed: elapsed,
+      over: over,
+      sessionId: currentSessionId,
+      timestamp: new Date().toISOString()
+    });
+    saveRecords();
+    el.inputId.value = '';
+    el.inputName.value = '';
+    el.inputName.focus();
+    resetTimer();
+    renderRanking();
+    updateSessionCount();
+  }
+
+  function updateSessionCount() {
+    const count = records.filter(r => r.sessionId === currentSessionId).length;
+    el.sessionCount.textContent = count;
+  }
+
+  function renderRanking() {
+    const filtered = currentFilter === 'session'
+      ? records.filter(r => r.sessionId === currentSessionId)
+      : records;
+    const chartSection = document.getElementById('chart-section');
+    if (filtered.length === 0) {
+      el.rankingList.innerHTML = '<p class="empty">Nenhum registro ainda. Aperta iniciar e vamos começar.</p>';
+      if (chartSection) chartSection.style.display = 'none';
+      if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+      return;
+    }
+    const byPerson = {};
+    filtered.forEach(r => {
+      if (!byPerson[r.name]) byPerson[r.name] = { name: r.name, totalOver: 0, count: 0 };
+      byPerson[r.name].totalOver += Math.max(0, r.over);
+      byPerson[r.name].count += 1;
+    });
+    const sorted = Object.values(byPerson).sort((a, b) => b.totalOver - a.totalOver);
+    let html = '';
+    sorted.forEach((p, i) => {
+      let rankClass = '';
+      if (i === 0 && p.totalOver > 0) rankClass = 'top';
+      else if (i < 3) rankClass = 'podium';
+      const overClass = p.totalOver > 0 ? 'negative' : 'positive';
+      const overText = p.totalOver > 0 ? '+' + fmtTime(p.totalOver) : 'no tempo';
+      html += '<div class="ranking-row">' +
+              '<span class="rank-num ' + rankClass + '">' + (i + 1) + '</span>' +
+              '<span class="rank-name">' + escapeHtml(p.name) + '</span>' +
+              '<span class="rank-count">' + p.count + ' falas</span>' +
+              '<span class="rank-over ' + overClass + '">' + overText + '</span>' +
+              '</div>';
+    });
+    el.rankingList.innerHTML = html;
+    if (chartSection) chartSection.style.display = 'block';
+    renderChart(sorted);
+  }
+
+  function renderChart(sorted) {
+    if (typeof Chart === 'undefined') return;
+    const canvas = document.getElementById('ranking-chart');
+    if (!canvas) return;
+    const labels = sorted.map(p => p.name);
+    const data = sorted.map(p => Math.round(p.totalOver));
+    const colors = sorted.map(p => p.totalOver > 0 ? '#e63946' : '#4ade80');
+    const height = Math.max(80, sorted.length * 34 + 20);
+    canvas.parentElement.style.height = height + 'px';
+
+    if (chartInstance) { chartInstance.destroy(); }
+
+    chartInstance = new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: colors,
+          borderRadius: 3,
+          borderSkipped: false,
+          barThickness: 20
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 300 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1a1a1e',
+            titleColor: '#ffffff',
+            bodyColor: '#a8a8b3',
+            borderColor: 'rgba(255,255,255,0.15)',
+            borderWidth: 1,
+            padding: 10,
+            displayColors: false,
+            callbacks: {
+              label: function(ctx) {
+                const seconds = ctx.parsed.x;
+                if (seconds === 0) return 'No tempo';
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                return 'Estourou +' + (m > 0 ? m + 'm ' : '') + s + 's';
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+            ticks: {
+              color: '#6b6b75',
+              font: { size: 10, family: 'Segoe UI' },
+              callback: function(value) {
+                if (value === 0) return '0s';
+                if (value < 60) return value + 's';
+                return Math.floor(value / 60) + 'm' + (value % 60 > 0 ? (value % 60) + 's' : '');
+              }
+            }
+          },
+          y: {
+            grid: { display: false, drawBorder: false },
+            ticks: {
+              color: '#ffffff',
+              font: { size: 12, family: 'Segoe UI', weight: '500' }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function buildCSV() {
+    const header = 'timestamp,sessionId,id,name,mode,limit_seconds,elapsed_seconds,over_seconds\n';
+    const rows = records.map(r =>
+      [r.timestamp, r.sessionId, r.id, '"' + r.name.replace(/"/g,'""') + '"', r.mode, r.limit, r.elapsed, r.over].join(',')
+    ).join('\n');
+    return header + rows;
+  }
+
+  function exportCSV() {
+    if (records.length === 0) { alert('Nenhum registro para exportar ainda.'); return; }
+    const csv = buildCSV();
+    const filename = 'war_room_timer_' + new Date().toISOString().slice(0,10) + '.csv';
+    try {
+      const bom = '\uFEFF';
+      const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8' });
+      if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveOrOpenBlob(blob, filename); return;
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.style.display = 'none';
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+      return;
+    } catch (e) {}
+    try {
+      const dataUri = 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(csv);
+      const a = document.createElement('a');
+      a.href = dataUri; a.download = filename; a.style.display = 'none';
+      document.body.appendChild(a); a.click();
+      setTimeout(() => document.body.removeChild(a), 100);
+      return;
+    } catch (e) {}
+    showCSVFallback(csv);
+  }
+
+  function showCSVFallback(csv) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    overlay.innerHTML = '<div style="background:var(--bg-card);padding:1.5rem;border-radius:8px;max-width:700px;width:100%;max-height:80vh;overflow:auto;border:1px solid var(--border-default);"><p style="margin:0 0 8px;font-size:15px;font-weight:600;color:var(--text-primary);">Download bloqueado pelo navegador</p><p style="margin:0 0 12px;font-size:13px;color:var(--text-secondary);">Copie o texto abaixo e cole em um arquivo .csv.</p><textarea id="csv-textarea" style="width:100%;height:200px;font-family:monospace;font-size:11px;padding:8px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border-default);border-radius:4px;resize:vertical;"></textarea><div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end;"><button id="csv-copy-btn" class="btn primary">COPIAR</button><button id="csv-close-btn" class="btn">FECHAR</button></div></div>';
+    document.body.appendChild(overlay);
+    const ta = overlay.querySelector('#csv-textarea');
+    ta.value = csv; ta.select();
+    overlay.querySelector('#csv-copy-btn').addEventListener('click', () => {
+      ta.select();
+      try {
+        navigator.clipboard.writeText(csv).then(() => {
+          const btn = overlay.querySelector('#csv-copy-btn');
+          btn.textContent = 'COPIADO';
+          setTimeout(() => { btn.textContent = 'COPIAR'; }, 2000);
+        }).catch(() => { document.execCommand('copy'); });
+      } catch (e) { document.execCommand('copy'); }
+    });
+    overlay.querySelector('#csv-close-btn').addEventListener('click', () => document.body.removeChild(overlay));
+  }
+
+  function newSession() {
+    if (!confirm('Criar nova sessão? As falas anteriores ficam no histórico mas saem do ranking de hoje.')) return;
+    currentSessionId = newSessionId();
+    saveSessionId();
+    renderRanking();
+    updateSessionCount();
+  }
+
+  function clearAll() {
+    if (!confirm('Apagar TODOS os registros históricos? Isso não pode ser desfeito.')) return;
+    records = [];
+    saveRecords();
+    currentSessionId = newSessionId();
+    saveSessionId();
+    renderRanking();
+    updateSessionCount();
+  }
+
+  el.modeFollowup.addEventListener('click', () => setMode('followup'));
+  el.modeNovo.addEventListener('click', () => setMode('novo'));
+  el.btnStart.addEventListener('click', startTimer);
+  el.btnStop.addEventListener('click', stopTimer);
+  el.btnReset.addEventListener('click', resetTimer);
+  el.btnExport.addEventListener('click', exportCSV);
+  el.btnNewSession.addEventListener('click', newSession);
+  el.btnClear.addEventListener('click', clearAll);
+  el.btnSound.addEventListener('click', toggleSound);
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      renderRanking();
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.code === 'Space') {
+      e.preventDefault();
+      if (!isRunning) startTimer();
+      else stopTimer();
+    }
+  });
+
+  loadSoundPref();
+  loadRecords();
+  setMode('followup');
+})();
+</script>
+</body>
+</html>
